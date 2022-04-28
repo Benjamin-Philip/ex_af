@@ -21,6 +21,7 @@ defmodule ExAF.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:nx, github: "elixir-nx/nx", sparse: "nx"},
       {:rustler, "~> 0.25.0"}
     ]
   end
