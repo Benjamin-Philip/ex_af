@@ -25,16 +25,26 @@ defmodule ExAF.Backend do
   def inspect(%T{} = tensor, inspect_opts) do
     limit = if inspect_opts.limit == :infinity, do: :infinity, else: inspect_opts.limit + 1
 
-    # TODO: Maybe add signature
-    #
-    # tensor
-    # |> to_binary(min(limit, Nx.size(tensor)))
-    # |> then(&Nx.Backend.inspect(tensor, &1, inspect_opts))
-    # |> maybe_add_signature(tensor)
-
     tensor
     |> to_binary(0)
     |> then(&Nx.Backend.inspect(tensor, &1, inspect_opts))
+    |> maybe_add_signature(tensor)
+  end
+
+  if Application.compile_env(:ex_af, :add_backend_on_inspect, true) do
+    defp maybe_add_signature(result, %T{data: %{resource: ref}}) do
+      '#Ref<' ++ rest = :erlang.ref_to_list(ref)
+
+      Inspect.Algebra.concat([
+        "ExAF.Backend<#{rest}",
+        Inspect.Algebra.line(),
+        result
+      ])
+    end
+  else
+    defp maybe_add_signature(result, _tensor) do
+      result
+    end
   end
 
   defp to_nx(ref, %T{type: _type, shape: _shape} = t) do
