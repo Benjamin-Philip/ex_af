@@ -9,7 +9,7 @@ defmodule ExAF.NxLinAlgDoctestTest do
   use ExUnit.Case, async: true
 
   setup do
-    Nx.default_backend(Torchx.Backend)
+    Nx.default_backend(ExAF.Backend)
     :ok
   end
 
