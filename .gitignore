@@ -24,3 +24,6 @@ ex_af-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# Ignore compiled nif too
+/priv/native/

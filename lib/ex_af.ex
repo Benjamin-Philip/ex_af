@@ -3,16 +3,39 @@ defmodule ExAF do
   Documentation for `ExAF`.
   """
 
-  @doc """
-  Hello world.
+  @supported_types [
+    {:u, 8},
+    {:u, 16},
+    {:u, 32},
+    {:u, 64},
+    {:s, 16},
+    {:s, 32},
+    {:s, 64},
+    {:f, 32},
+    {:f, 64}
+  ]
 
-  ## Examples
+  def to_exaf_type(type) do
+    if Enum.member?(@supported_types, type) do
+      type_to_string(type)
+    else
+      {:error, "ExAF does not support type: #{inspect(type)}"}
+    end
+  end
 
-      iex> ExAF.hello()
-      :world
+  defp type_to_string({atom, bytes}) do
+    "#{atom}#{bytes}"
+  end
 
-  """
-  def hello do
-    :world
+  def to_exaf_shape(shape) do
+    shape = Tuple.to_list(shape)
+
+    case length(shape) do
+      len when len > 4 ->
+        {:error, "ExAF does not support #{len} dimensional tensors"}
+
+      len ->
+        shape ++ List.duplicate(1, 4 - len)
+    end
   end
 end
