@@ -1,0 +1,81 @@
+name: Elixir
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+env:
+  ELIXIR_VERSION: 1.13
+  OTP_VERSION: 24.2
+  MIX_ENV: test
+  AF_VERSION: 3.8.0
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cache Elixir dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-
+      - name: Cache Rust dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            native/exaf_native/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+      - name: Setup Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: "${{ env.OTP_VERSION }}"
+          elixir-version: "${{ env.ELIXIR_VERSION }}"
+      - name: Cache ArrayFire
+        uses: actions/cache@v1
+        id: arrayfire
+        with:
+          path: afbin
+          key: ${{ runner.os }}-af-${{ env.AF_VERSION }}
+      - name: Download ArrayFire
+        run: |
+          wget --quiet http://arrayfire.s3.amazonaws.com/${AF_VERSION}/ArrayFire-v${AF_VERSION}_Linux_x86_64.sh
+          chmod +x ./ArrayFire-v${AF_VERSION}_Linux_x86_64.sh
+          mkdir afbin
+          ./ArrayFire-v${AF_VERSION}_Linux_x86_64.sh --skip-license --exclude-subdir --prefix=./afbin
+          rm ./afbin/lib64/libcu*.so*
+          rm ./afbin/lib64/libafcuda*.so*
+          rm ./ArrayFire-v${AF_VERSION}_Linux_x86_64.sh
+      - name: Add ArrayFire to path
+        run: |
+          echo "AF_PATH=${GITHUB_WORKSPACE}/afbin" >> $GITHUB_ENV
+          echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${GITHUB_WORKSPACE}/afbin/lib64" >> $GITHUB_ENV
+      - run: mix deps.get
+      - run: mix compile
+      - run: mix test
+  format:
+    runs-on: ubuntu-latest
+    name: mix format
+    steps:
+      - uses: actions/checkout@v2
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: "${{ env.OTP_VERSION }}"
+          elixir-version: "${{ env.ELIXIR_VERSION }}"
+      - run: mix format --check-formatted
