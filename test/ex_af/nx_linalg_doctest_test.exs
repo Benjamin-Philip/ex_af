@@ -8,10 +8,5 @@ defmodule ExAF.NxLinAlgDoctestTest do
 
   use ExUnit.Case, async: true
 
-  setup do
-    Nx.default_backend(ExAF.Backend)
-    :ok
-  end
-
-  doctest Nx.LinAlg
+  # doctest Nx.LinAlg
 end

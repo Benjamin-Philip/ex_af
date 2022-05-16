@@ -6,12 +6,38 @@ defmodule ExAF.NxDoctestTest do
   for the excluded tests can be found on ExAF.NxTest.
   """
 
+  @nx_callbacks Nx.Backend.behaviour_info(:callbacks)
+  @nx_funcs Nx.__info__(:functions)
+
   use ExUnit.Case, async: true
 
-  setup do
-    Nx.default_backend(ExAF.Backend)
-    :ok
-  end
+  unimplemented_callbacks = @nx_callbacks -- ExAF.Backend.__info__(:functions)
+  implemented_callbacks = @nx_callbacks -- unimplemented_callbacks
 
-  doctest Nx
+  # Functions broken because their callback has not been implemented.
+  unimplemented_funcs =
+    implemented_callbacks
+    |> Keyword.keys()
+    |> then(&Keyword.drop(@nx_funcs, &1))
+
+  temporarily_broken_doctests = [
+    # ExAF.Backend.constant is undefined
+    to_binary: 2
+  ]
+
+  inherently_unsupported_doctests = [
+    # ExAF does not support f16
+    sigil_V: 2,
+    # ExAF does not support f16
+    sigil_M: 2,
+    # ExAF does not support s8
+    from_binary: 3
+  ]
+
+  doctest Nx,
+    except:
+      unimplemented_funcs
+      |> Kernel.++(inherently_unsupported_doctests)
+      |> Kernel.++(temporarily_broken_doctests)
+      |> Kernel.++([:moduledoc])
 end
