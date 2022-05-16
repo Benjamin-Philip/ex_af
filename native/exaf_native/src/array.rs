@@ -17,10 +17,12 @@ pub fn from_binary(binary: Binary, shape: Vec<u64>, dtype: String) -> ExAf {
 }
 
 #[rustler::nif]
-pub fn to_binary(env: Env, array: ExAf) -> Binary {
+pub fn to_binary(env: Env, array: ExAf, limit: usize) -> Binary {
     let ex_array = array.resource.value();
 
-    let vec = ex_array.to_vec();
+    let mut vec = ex_array.to_vec();
+    vec.truncate(ex_array.dtype().bytes() * limit);
+
     let slice = vec.as_slice();
 
     let mut erl_bin = OwnedBinary::new(vec.len()).unwrap();

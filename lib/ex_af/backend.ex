@@ -16,9 +16,8 @@ defmodule ExAF.Backend do
 
   # Conversion
 
-  # TODO: Support a limit
-  def to_binary(%T{data: data}, _limit) do
-    ExAF.Native.to_binary(data)
+  def to_binary(%T{data: data}, limit) do
+    ExAF.Native.to_binary(data, limit)
   end
 
   @impl true
@@ -26,7 +25,7 @@ defmodule ExAF.Backend do
     limit = if inspect_opts.limit == :infinity, do: :infinity, else: inspect_opts.limit + 1
 
     tensor
-    |> to_binary(0)
+    |> to_binary(limit)
     |> then(&Nx.Backend.inspect(tensor, &1, inspect_opts))
     |> maybe_add_signature(tensor)
   end

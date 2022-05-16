@@ -16,6 +16,17 @@ pub enum ExAfDType {
     F64,
 }
 
+impl ExAfDType {
+    pub fn bytes(&self) -> usize {
+        match self {
+            ExAfDType::U8 => 1,
+            ExAfDType::U16 | ExAfDType::S16 => 2,
+            ExAfDType::U32 | ExAfDType::S32 | ExAfDType::F32 => 4,
+            ExAfDType::U64 | ExAfDType::S64 | ExAfDType::F64 => 8,
+        }
+    }
+}
+
 #[derive(Clone)]
 pub enum ExAfArray {
     U8(Array<u8>),
