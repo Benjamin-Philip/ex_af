@@ -11,6 +11,7 @@ defmodule ExAF do
     {:s, 16},
     {:s, 32},
     {:s, 64},
+    {:f, 16},
     {:f, 32},
     {:f, 64}
   ]
@@ -19,7 +20,7 @@ defmodule ExAF do
     if Enum.member?(@supported_types, type) do
       type_to_string(type)
     else
-      {:error, "ExAF does not support type: #{inspect(type)}"}
+      raise ArgumentError, "ExAF does not support type: #{inspect(type)}"
     end
   end
 
@@ -32,7 +33,7 @@ defmodule ExAF do
 
     case length(shape) do
       len when len > 4 ->
-        {:error, "ExAF does not support #{len} dimensional tensors"}
+        raise ArgumentError, "ExAF does not support #{len} dimensional tensors"
 
       len ->
         shape ++ List.duplicate(1, 4 - len)

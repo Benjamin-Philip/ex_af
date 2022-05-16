@@ -9,6 +9,7 @@ defmodule ExAF.NxTest do
     {:s, 16},
     {:s, 32},
     {:s, 64},
+    {:f, 16},
     {:f, 32},
     {:f, 64}
   ]

@@ -1,4 +1,5 @@
 use arrayfire::{Array, Dim4};
+use half::f16;
 use rustler::resource::ResourceArc;
 use rustler::NifStruct;
 use std::sync::RwLock;
@@ -12,6 +13,7 @@ pub enum ExAfDType {
     S16,
     S32,
     S64,
+    F16,
     F32,
     F64,
 }
@@ -20,7 +22,7 @@ impl ExAfDType {
     pub fn bytes(&self) -> usize {
         match self {
             ExAfDType::U8 => 1,
-            ExAfDType::U16 | ExAfDType::S16 => 2,
+            ExAfDType::U16 | ExAfDType::S16 | ExAfDType::F16 => 2,
             ExAfDType::U32 | ExAfDType::S32 | ExAfDType::F32 => 4,
             ExAfDType::U64 | ExAfDType::S64 | ExAfDType::F64 => 8,
         }
@@ -36,6 +38,7 @@ pub enum ExAfArray {
     S16(Array<i16>),
     S32(Array<i32>),
     S64(Array<i64>),
+    F16(Array<f16>),
     F32(Array<f32>),
     F64(Array<f64>),
 }
@@ -61,6 +64,9 @@ impl ExAfArray {
             }
             ExAfDType::S64 => {
                 ExAfArray::S64(Array::new(unsafe { &(*slice.align_to::<i64>().1) }, dim))
+            }
+            ExAfDType::F16 => {
+                ExAfArray::F16(Array::new(unsafe { &(*slice.align_to::<f16>().1) }, dim))
             }
             ExAfDType::F32 => {
                 ExAfArray::F32(Array::new(unsafe { &(*slice.align_to::<f32>().1) }, dim))
@@ -117,6 +123,13 @@ impl ExAfArray {
 
                 unsafe { vector.align_to::<u8>().1.to_vec() }
             }
+            ExAfDType::F16 => {
+                let mut vector = vec![f16::default(); nelements];
+                apply_method_array!(self, host, &mut vector);
+
+                unsafe { vector.align_to::<u8>().1.to_vec() }
+            }
+
             ExAfDType::F32 => {
                 let mut vector = vec![f32::default(); nelements];
                 apply_method_array!(self, host, &mut vector);
@@ -141,6 +154,7 @@ impl ExAfArray {
             ExAfArray::S16(_a) => ExAfDType::S16,
             ExAfArray::S32(_a) => ExAfDType::S32,
             ExAfArray::S64(_a) => ExAfDType::S64,
+            ExAfArray::F16(_a) => ExAfDType::F16,
             ExAfArray::F32(_a) => ExAfDType::F32,
             ExAfArray::F64(_a) => ExAfDType::F64,
         }
@@ -158,6 +172,7 @@ macro_rules! apply_method_array {
             ExAfArray::S16(ref a) => a.$method($($args), *),
             ExAfArray::S32(ref a) => a.$method($($args), *),
             ExAfArray::S64(ref a) => a.$method($($args), *),
+            ExAfArray::F16(ref a) => a.$method($($args), *),
             ExAfArray::F32(ref a) => a.$method($($args), *),
             ExAfArray::F64(ref a) => a.$method($($args), *),
         }
@@ -177,6 +192,7 @@ macro_rules! apply_function_array {
             ExAfArray::S16(ref a) => $method(a, $($args), *),
             ExAfArray::S32(ref a) => $method(a, $($args), *),
             ExAfArray::S64(ref a) => $method(a, $($args), *),
+            ExAfArray::F16(ref a) => $method(a, $($args), *),
             ExAfArray::F32(ref a) => $method(a, $($args), *),
             ExAfArray::F64(ref a) => $method(a, $($args), *),
         }

@@ -21,16 +21,16 @@ defmodule ExAF.NxDoctestTest do
     |> then(&Keyword.drop(@nx_funcs, &1))
 
   temporarily_broken_doctests = [
+    # ExAF has not implemented reshape
+    sigil_V: 2,
+    # ExAF does not support c64 yet
+    sigil_M: 2,
     # ExAF.Backend.constant is undefined
     to_binary: 2
   ]
 
   inherently_unsupported_doctests = [
-    # ExAF does not support f16
-    sigil_V: 2,
-    # ExAF does not support f16
-    sigil_M: 2,
-    # ExAF does not support s8
+    # ExAF/Arrayfire does not support s8
     from_binary: 3
   ]
 
