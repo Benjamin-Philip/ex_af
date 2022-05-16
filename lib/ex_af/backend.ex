@@ -16,7 +16,7 @@ defmodule ExAF.Backend do
 
   # Conversion
 
-  def to_binary(%T{data: data}, limit) do
+  def to_binary(%T{data: data}, limit, _backend_opts \\ []) do
     ExAF.Native.to_binary(data, limit)
   end
 
