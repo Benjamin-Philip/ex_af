@@ -5,6 +5,11 @@ defmodule ExAF.Backend do
 
   # Creation
 
+  def constant(%T{type: type, shape: shape} = out, constant, backend_opts) do
+    data = :binary.copy(ExAF.number_to_binary(constant, type), Nx.size(shape))
+    from_binary(out, data, backend_opts)
+  end
+
   def from_binary(%T{shape: shape, type: type} = out, binary, _opts) do
     shape = ExAF.to_exaf_shape(shape)
     type = ExAF.to_exaf_type(type)

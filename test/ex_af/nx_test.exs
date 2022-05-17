@@ -16,8 +16,8 @@ defmodule ExAF.NxTest do
     {:c, 128}
   ]
 
-  describe "creation" do
-    test "tensor" do
+  describe "tensor" do
+    test "creation" do
       for type <- @supported_types do
         list = [1, 2, 3]
 
@@ -28,6 +28,24 @@ defmodule ExAF.NxTest do
 
         binary_backend_binary =
           list
+          |> Nx.tensor(type: type, backend: Nx.BinaryBackend)
+          |> Nx.to_binary()
+
+        assert exaf_binary == binary_backend_binary
+      end
+    end
+
+    test "constant creation" do
+      for type <- @supported_types do
+        scalar = 1
+
+        exaf_binary =
+          scalar
+          |> Nx.tensor(type: type)
+          |> Nx.to_binary()
+
+        binary_backend_binary =
+          scalar
           |> Nx.tensor(type: type, backend: Nx.BinaryBackend)
           |> Nx.to_binary()
 

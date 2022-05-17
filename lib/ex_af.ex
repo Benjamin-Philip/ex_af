@@ -3,6 +3,8 @@ defmodule ExAF do
   Documentation for `ExAF`.
   """
 
+  import Nx.Shared
+
   @supported_types [
     {:u, 8},
     {:u, 16},
@@ -40,5 +42,9 @@ defmodule ExAF do
       len ->
         shape ++ List.duplicate(1, 4 - len)
     end
+  end
+
+  def number_to_binary(number, type) do
+    match_types([type], do: <<write!(number, 0)>>)
   end
 end
