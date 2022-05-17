@@ -54,6 +54,8 @@ jobs:
           path: afbin
           key: ${{ runner.os }}-af-${{ env.AF_VERSION }}
       - name: Download ArrayFire
+        # Only download ArrayFire if already not found
+        if: steps.arrayfire.outputs.cache-hit != 'true'
         run: |
           wget --quiet http://arrayfire.s3.amazonaws.com/${AF_VERSION}/ArrayFire-v${AF_VERSION}_Linux_x86_64.sh
           chmod +x ./ArrayFire-v${AF_VERSION}_Linux_x86_64.sh
