@@ -13,3 +13,4 @@ crate-type = ["cdylib"]
 rustler = "0.25.0"
 arrayfire = "3.8"
 half = "1.8.2"
+num-complex = "0.2"

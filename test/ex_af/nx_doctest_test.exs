@@ -23,7 +23,7 @@ defmodule ExAF.NxDoctestTest do
   temporarily_broken_doctests = [
     # ExAF has not implemented reshape
     sigil_V: 2,
-    # ExAF does not support c64 yet
+    # ExAF has not implemented reshape
     sigil_M: 2,
     # ExAF.Backend.constant is undefined
     to_binary: 2

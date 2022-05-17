@@ -57,6 +57,8 @@ fn dtype_from_string(dtype: String) -> ExAfDType {
         "f16" => ExAfDType::F16,
         "f32" => ExAfDType::F32,
         "f64" => ExAfDType::F64,
+        "c64" => ExAfDType::C64,
+        "c128" => ExAfDType::C128,
         _ => unimplemented!(),
     }
 }

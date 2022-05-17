@@ -1,5 +1,6 @@
 use arrayfire::{Array, Dim4};
 use half::f16;
+use num_complex::{Complex, Complex32, Complex64};
 use rustler::resource::ResourceArc;
 use rustler::NifStruct;
 use std::sync::RwLock;
@@ -16,6 +17,8 @@ pub enum ExAfDType {
     F16,
     F32,
     F64,
+    C64,
+    C128,
 }
 
 impl ExAfDType {
@@ -24,7 +27,8 @@ impl ExAfDType {
             ExAfDType::U8 => 1,
             ExAfDType::U16 | ExAfDType::S16 | ExAfDType::F16 => 2,
             ExAfDType::U32 | ExAfDType::S32 | ExAfDType::F32 => 4,
-            ExAfDType::U64 | ExAfDType::S64 | ExAfDType::F64 => 8,
+            ExAfDType::U64 | ExAfDType::S64 | ExAfDType::F64 | ExAfDType::C64 => 8,
+            ExAfDType::C128 => 16,
         }
     }
 }
@@ -41,6 +45,8 @@ pub enum ExAfArray {
     F16(Array<f16>),
     F32(Array<f32>),
     F64(Array<f64>),
+    C64(Array<Complex32>),
+    C128(Array<Complex64>),
 }
 
 impl ExAfArray {
@@ -73,6 +79,34 @@ impl ExAfArray {
             }
             ExAfDType::F64 => {
                 ExAfArray::F64(Array::new(unsafe { &(*slice.align_to::<f64>().1) }, dim))
+            }
+
+            ExAfDType::C64 => {
+                let mut complex_vec = Vec::new();
+                for chunk in unsafe { slice.align_to::<f32>().1.chunks_exact(2) } {
+                    let mut chunk_iter = chunk.iter();
+
+                    let re = chunk_iter.next().unwrap();
+                    let im = chunk_iter.next().unwrap();
+
+                    complex_vec.push(Complex::new(*re, *im))
+                }
+
+                ExAfArray::C64(Array::new(complex_vec.as_slice(), dim))
+            }
+
+            ExAfDType::C128 => {
+                let mut complex_vec = Vec::new();
+                for chunk in unsafe { slice.align_to::<f64>().1.chunks_exact(2) } {
+                    let mut chunk_iter = chunk.iter();
+
+                    let re = chunk_iter.next().unwrap();
+                    let im = chunk_iter.next().unwrap();
+
+                    complex_vec.push(Complex::new(*re, *im))
+                }
+
+                ExAfArray::C128(Array::new(complex_vec.as_slice(), dim))
             }
         }
     }
@@ -142,6 +176,18 @@ impl ExAfArray {
 
                 unsafe { vector.align_to::<u8>().1.to_vec() }
             }
+            ExAfDType::C64 => {
+                let mut vector = vec![Complex32::default(); nelements];
+                apply_method_array!(self, host, &mut vector);
+
+                unsafe { vector.align_to::<u8>().1.to_vec() }
+            }
+            ExAfDType::C128 => {
+                let mut vector = vec![Complex64::default(); nelements];
+                apply_method_array!(self, host, &mut vector);
+
+                unsafe { vector.align_to::<u8>().1.to_vec() }
+            }
         }
     }
 
@@ -157,6 +203,8 @@ impl ExAfArray {
             ExAfArray::F16(_a) => ExAfDType::F16,
             ExAfArray::F32(_a) => ExAfDType::F32,
             ExAfArray::F64(_a) => ExAfDType::F64,
+            ExAfArray::C64(_a) => ExAfDType::C64,
+            ExAfArray::C128(_a) => ExAfDType::C128,
         }
     }
 }
@@ -175,6 +223,8 @@ macro_rules! apply_method_array {
             ExAfArray::F16(ref a) => a.$method($($args), *),
             ExAfArray::F32(ref a) => a.$method($($args), *),
             ExAfArray::F64(ref a) => a.$method($($args), *),
+            ExAfArray::C64(ref a) => a.$method($($args), *),
+            ExAfArray::C128(ref a) => a.$method($($args), *),
         }
     };
 }
@@ -195,6 +245,8 @@ macro_rules! apply_function_array {
             ExAfArray::F16(ref a) => $method(a, $($args), *),
             ExAfArray::F32(ref a) => $method(a, $($args), *),
             ExAfArray::F64(ref a) => $method(a, $($args), *),
+            ExAfArray::C64(ref a) => $method(a, $($args), *),
+            ExAfArray::C128(ref a) => $method(a, $($args), *),
         }
     };
 }

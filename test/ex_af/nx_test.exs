@@ -11,7 +11,9 @@ defmodule ExAF.NxTest do
     {:s, 64},
     {:f, 16},
     {:f, 32},
-    {:f, 64}
+    {:f, 64},
+    {:c, 64},
+    {:c, 128}
   ]
 
   describe "creation" do
