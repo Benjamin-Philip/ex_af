@@ -11,4 +11,8 @@ fn load(env: Env, _info: Term) -> bool {
     true
 }
 
-rustler::init!("Elixir.ExAF.Native", [from_binary, to_binary], load = load);
+rustler::init!(
+    "Elixir.ExAF.Native",
+    [from_binary, to_binary, reshape],
+    load = load
+);

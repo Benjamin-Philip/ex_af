@@ -20,12 +20,7 @@ defmodule ExAF.NxDoctestTest do
     |> Keyword.keys()
     |> then(&Keyword.drop(@nx_funcs, &1))
 
-  temporarily_broken_doctests = [
-    # ExAF has not implemented reshape
-    sigil_V: 2,
-    # ExAF has not implemented reshape
-    sigil_M: 2
-  ]
+  temporarily_broken_doctests = []
 
   inherently_unsupported_doctests = [
     # ExAF/Arrayfire does not support s8

@@ -10,7 +10,9 @@ defmodule ExAF.Backend do
     from_binary(out, data, backend_opts)
   end
 
-  def from_binary(%T{shape: shape, type: type} = out, binary, _opts) do
+  # Conversion
+
+  def from_binary(%T{shape: shape, type: type} = out, binary, _opts \\ []) do
     shape = ExAF.to_exaf_shape(shape)
     type = ExAF.to_exaf_type(type)
 
@@ -19,9 +21,7 @@ defmodule ExAF.Backend do
     |> to_nx(out)
   end
 
-  # Conversion
-
-  def to_binary(%T{data: data}, limit, _backend_opts \\ []) do
+  def to_binary(%T{data: data}, limit \\ nil, _backend_opts \\ []) do
     ExAF.Native.to_binary(data, limit)
   end
 
@@ -53,5 +53,14 @@ defmodule ExAF.Backend do
 
   defp to_nx(ref, %T{type: _type, shape: _shape} = t) do
     %{t | data: ref}
+  end
+
+  # Shape
+  def reshape(%T{shape: shape} = out, %T{data: data} = tensor) do
+    shape = ExAF.to_exaf_shape(shape)
+
+    data
+    |> ExAF.Native.reshape(shape)
+    |> to_nx(out)
   end
 end

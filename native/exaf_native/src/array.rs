@@ -1,11 +1,14 @@
 use crate::datatypes::*;
 
 use arrayfire::Dim4;
+use arrayfire::*;
 use rustler::types::{Binary, OwnedBinary};
 use rustler::Env;
 use std::convert::TryInto;
 
 // Public API
+
+// Conversion
 
 #[rustler::nif]
 pub fn from_binary(binary: Binary, shape: Vec<u64>, dtype: String) -> ExAf {
@@ -13,7 +16,7 @@ pub fn from_binary(binary: Binary, shape: Vec<u64>, dtype: String) -> ExAf {
     let slice = binary.as_slice();
     let dtype = dtype_from_string(dtype);
 
-    ExAf::new(slice, dim, dtype)
+    ExAf::from_slice(slice, dim, dtype)
 }
 
 #[rustler::nif]
@@ -29,6 +32,15 @@ pub fn to_binary(env: Env, array: ExAf, limit: usize) -> Binary {
     erl_bin.as_mut_slice().copy_from_slice(slice);
 
     erl_bin.release(env)
+}
+
+// Shape
+#[rustler::nif]
+pub fn reshape(array: ExAf, shape: Vec<u64>) -> ExAf {
+    let dim = dim_from_shape(shape);
+    let ex_array = array.resource.value();
+
+    apply_function_array!(ex_array, moddims, dim)
 }
 
 // Helpers

@@ -50,7 +50,7 @@ pub enum ExAfArray {
 }
 
 impl ExAfArray {
-    pub fn new(slice: &[u8], dim: Dim4, dtype: ExAfDType) -> Self {
+    pub fn from_slice(slice: &[u8], dim: Dim4, dtype: ExAfDType) -> Self {
         match dtype {
             ExAfDType::U8 => ExAfArray::U8(Array::new(slice, dim)),
             ExAfDType::U16 => {
@@ -234,20 +234,20 @@ pub(crate) use apply_method_array;
 #[macro_export]
 macro_rules! apply_function_array {
     ($self:ident, $method:ident, $($args:expr),*) => {
-        match $self {
-            ExAfArray::U8(ref a) => $method(a, $($args), *),
-            ExAfArray::U16(ref a) => $method(a, $($args), *),
-            ExAfArray::U32(ref a) => $method(a, $($args), *),
-            ExAfArray::U64(ref a) => $method(a, $($args), *),
-            ExAfArray::S16(ref a) => $method(a, $($args), *),
-            ExAfArray::S32(ref a) => $method(a, $($args), *),
-            ExAfArray::S64(ref a) => $method(a, $($args), *),
-            ExAfArray::F16(ref a) => $method(a, $($args), *),
-            ExAfArray::F32(ref a) => $method(a, $($args), *),
-            ExAfArray::F64(ref a) => $method(a, $($args), *),
-            ExAfArray::C64(ref a) => $method(a, $($args), *),
-            ExAfArray::C128(ref a) => $method(a, $($args), *),
-        }
+        ExAf::from_exaf_array( match $self {
+            ExAfArray::U8(ref a) => ExAfArray::U8($method(a, $($args), *)),
+            ExAfArray::U16(ref a) => ExAfArray::U16($method(a, $($args), *)),
+            ExAfArray::U32(ref a) => ExAfArray::U32($method(a, $($args), *)),
+            ExAfArray::U64(ref a) => ExAfArray::U64($method(a, $($args), *)),
+            ExAfArray::S16(ref a) => ExAfArray::S16($method(a, $($args), *)),
+            ExAfArray::S32(ref a) => ExAfArray::S32($method(a, $($args), *)),
+            ExAfArray::S64(ref a) => ExAfArray::S64($method(a, $($args), *)),
+            ExAfArray::F16(ref a) => ExAfArray::F16($method(a, $($args), *)),
+            ExAfArray::F32(ref a) => ExAfArray::F32($method(a, $($args), *)),
+            ExAfArray::F64(ref a) => ExAfArray::F64($method(a, $($args), *)),
+            ExAfArray::C64(ref a) => ExAfArray::C64($method(a, $($args), *)),
+            ExAfArray::C128(ref a) => ExAfArray::C128($method(a, $($args), *)),
+        })
     };
 }
 
@@ -262,8 +262,12 @@ pub struct ExAf {
 }
 
 impl ExAfRef {
-    pub fn new(slice: &[u8], dim: Dim4, dtype: ExAfDType) -> Self {
-        Self(RwLock::new(ExAfArray::new(slice, dim, dtype)))
+    pub fn from_exaf_array(array: ExAfArray) -> Self {
+        Self(RwLock::new(array))
+    }
+
+    pub fn from_slice(slice: &[u8], dim: Dim4, dtype: ExAfDType) -> Self {
+        Self(RwLock::new(ExAfArray::from_slice(slice, dim, dtype)))
     }
 
     pub fn value(&self) -> ExAfArray {
@@ -275,9 +279,14 @@ impl ExAfRef {
 }
 
 impl ExAf {
-    pub fn new(slice: &[u8], dim: Dim4, dtype: ExAfDType) -> Self {
+    pub fn from_exaf_array(array: ExAfArray) -> Self {
         Self {
-            resource: ResourceArc::new(ExAfRef::new(slice, dim, dtype)),
+            resource: ResourceArc::new(ExAfRef::from_exaf_array(array)),
+        }
+    }
+    pub fn from_slice(slice: &[u8], dim: Dim4, dtype: ExAfDType) -> Self {
+        Self {
+            resource: ResourceArc::new(ExAfRef::from_slice(slice, dim, dtype)),
         }
     }
 }
