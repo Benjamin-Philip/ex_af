@@ -24,9 +24,7 @@ defmodule ExAF.NxDoctestTest do
     # ExAF has not implemented reshape
     sigil_V: 2,
     # ExAF has not implemented reshape
-    sigil_M: 2,
-    # ExAF.Backend.constant is undefined
-    to_binary: 2
+    sigil_M: 2
   ]
 
   inherently_unsupported_doctests = [
