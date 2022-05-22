@@ -13,6 +13,6 @@ fn load(env: Env, _info: Term) -> bool {
 
 rustler::init!(
     "Elixir.ExAF.Native",
-    [from_binary, to_binary, reshape],
+    [from_binary, to_binary, reshape, as_type],
     load = load
 );

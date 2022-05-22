@@ -232,21 +232,43 @@ macro_rules! apply_method_array {
 pub(crate) use apply_method_array;
 
 #[macro_export]
+macro_rules! apply_generic_method_array {
+    ($self:ident, $method:ident, $type:ident, $($args:expr),*) => {
+        match $self {
+            ExAfArray::U8(ref a) => a.$method::<$type>($($args), *),
+            ExAfArray::U16(ref a) => a.$method::<$type>($($args), *),
+            ExAfArray::U32(ref a) => a.$method::<$type>($($args), *),
+            ExAfArray::U64(ref a) => a.$method::<$type>($($args), *),
+            ExAfArray::S16(ref a) => a.$method::<$type>($($args), *),
+            ExAfArray::S32(ref a) => a.$method::<$type>($($args), *),
+            ExAfArray::S64(ref a) => a.$method::<$type>($($args), *),
+            ExAfArray::F16(ref a) => a.$method::<$type>($($args), *),
+            ExAfArray::F32(ref a) => a.$method::<$type>($($args), *),
+            ExAfArray::F64(ref a) => a.$method::<$type>($($args), *),
+            ExAfArray::C64(ref a) => a.$method::<$type>($($args), *),
+            ExAfArray::C128(ref a) => a.$method::<$type>($($args), *),
+        }
+    };
+}
+
+pub(crate) use apply_generic_method_array;
+
+#[macro_export]
 macro_rules! apply_function_array {
-    ($self:ident, $method:ident, $($args:expr),*) => {
+    ($self:ident, $function:ident, $($args:expr),*) => {
         ExAf::from_exaf_array( match $self {
-            ExAfArray::U8(ref a) => ExAfArray::U8($method(a, $($args), *)),
-            ExAfArray::U16(ref a) => ExAfArray::U16($method(a, $($args), *)),
-            ExAfArray::U32(ref a) => ExAfArray::U32($method(a, $($args), *)),
-            ExAfArray::U64(ref a) => ExAfArray::U64($method(a, $($args), *)),
-            ExAfArray::S16(ref a) => ExAfArray::S16($method(a, $($args), *)),
-            ExAfArray::S32(ref a) => ExAfArray::S32($method(a, $($args), *)),
-            ExAfArray::S64(ref a) => ExAfArray::S64($method(a, $($args), *)),
-            ExAfArray::F16(ref a) => ExAfArray::F16($method(a, $($args), *)),
-            ExAfArray::F32(ref a) => ExAfArray::F32($method(a, $($args), *)),
-            ExAfArray::F64(ref a) => ExAfArray::F64($method(a, $($args), *)),
-            ExAfArray::C64(ref a) => ExAfArray::C64($method(a, $($args), *)),
-            ExAfArray::C128(ref a) => ExAfArray::C128($method(a, $($args), *)),
+            ExAfArray::U8(ref a) => ExAfArray::U8(arrayfire::$function(a, $($args), *)),
+            ExAfArray::U16(ref a) => ExAfArray::U16(arrayfire::$function(a, $($args), *)),
+            ExAfArray::U32(ref a) => ExAfArray::U32(arrayfire::$function(a, $($args), *)),
+            ExAfArray::U64(ref a) => ExAfArray::U64(arrayfire::$function(a, $($args), *)),
+            ExAfArray::S16(ref a) => ExAfArray::S16(arrayfire::$function(a, $($args), *)),
+            ExAfArray::S32(ref a) => ExAfArray::S32(arrayfire::$function(a, $($args), *)),
+            ExAfArray::S64(ref a) => ExAfArray::S64(arrayfire::$function(a, $($args), *)),
+            ExAfArray::F16(ref a) => ExAfArray::F16(arrayfire::$function(a, $($args), *)),
+            ExAfArray::F32(ref a) => ExAfArray::F32(arrayfire::$function(a, $($args), *)),
+            ExAfArray::F64(ref a) => ExAfArray::F64(arrayfire::$function(a, $($args), *)),
+            ExAfArray::C64(ref a) => ExAfArray::C64(arrayfire::$function(a, $($args), *)),
+            ExAfArray::C128(ref a) => ExAfArray::C128(arrayfire::$function(a, $($args), *)),
         })
     };
 }

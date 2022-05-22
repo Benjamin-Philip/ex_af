@@ -24,7 +24,9 @@ defmodule ExAF.NxDoctestTest do
 
   inherently_unsupported_doctests = [
     # ExAF/Arrayfire does not support s8
-    from_binary: 3
+    from_binary: 3,
+    # ExAF/Arrayfire does not support bf16
+    as_type: 2
   ]
 
   doctest Nx,

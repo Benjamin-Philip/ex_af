@@ -2,6 +2,7 @@ defmodule ExAF.Backend do
   @behaviour Nx.Backend
 
   alias Nx.Tensor, as: T
+  alias ExAF.Native
 
   # Creation
 
@@ -17,12 +18,12 @@ defmodule ExAF.Backend do
     type = ExAF.to_exaf_type(type)
 
     binary
-    |> ExAF.Native.from_binary(shape, type)
+    |> Native.from_binary(shape, type)
     |> to_nx(out)
   end
 
   def to_binary(%T{data: data}, limit \\ nil, _backend_opts \\ []) do
-    ExAF.Native.to_binary(data, limit)
+    Native.to_binary(data, limit)
   end
 
   @impl true
@@ -51,16 +52,32 @@ defmodule ExAF.Backend do
     end
   end
 
+  defp from_nx(%T{data: ref}) do
+    ref
+  end
+
   defp to_nx(ref, %T{type: _type, shape: _shape} = t) do
     %{t | data: ref}
   end
 
   # Shape
-  def reshape(%T{shape: shape} = out, %T{data: data} = tensor) do
-    shape = ExAF.to_exaf_shape(shape)
+  def reshape(out, tensor) do
+    shape = ExAF.to_exaf_shape(out.shape)
 
-    data
-    |> ExAF.Native.reshape(shape)
+    tensor
+    |> from_nx()
+    |> Native.reshape(shape)
+    |> to_nx(out)
+  end
+
+  # Type
+
+  def as_type(out, tensor) do
+    type = ExAF.to_exaf_type(out.type)
+
+    tensor
+    |> from_nx()
+    |> Native.as_type(type)
     |> to_nx(out)
   end
 end
