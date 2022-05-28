@@ -209,6 +209,82 @@ impl ExAfArray {
     }
 }
 
+pub trait ArrayToExAfArray {
+    fn to_exaf_array(&self) -> ExAfArray;
+}
+
+impl ArrayToExAfArray for Array<u8> {
+    fn to_exaf_array(&self) -> ExAfArray {
+        ExAfArray::U8(self.copy())
+    }
+}
+
+impl ArrayToExAfArray for Array<u16> {
+    fn to_exaf_array(&self) -> ExAfArray {
+        ExAfArray::U16(self.copy())
+    }
+}
+
+impl ArrayToExAfArray for Array<u32> {
+    fn to_exaf_array(&self) -> ExAfArray {
+        ExAfArray::U32(self.copy())
+    }
+}
+
+impl ArrayToExAfArray for Array<u64> {
+    fn to_exaf_array(&self) -> ExAfArray {
+        ExAfArray::U64(self.copy())
+    }
+}
+
+impl ArrayToExAfArray for Array<i16> {
+    fn to_exaf_array(&self) -> ExAfArray {
+        ExAfArray::S16(self.copy())
+    }
+}
+
+impl ArrayToExAfArray for Array<i32> {
+    fn to_exaf_array(&self) -> ExAfArray {
+        ExAfArray::S32(self.copy())
+    }
+}
+
+impl ArrayToExAfArray for Array<i64> {
+    fn to_exaf_array(&self) -> ExAfArray {
+        ExAfArray::S64(self.copy())
+    }
+}
+
+impl ArrayToExAfArray for Array<f16> {
+    fn to_exaf_array(&self) -> ExAfArray {
+        ExAfArray::F16(self.copy())
+    }
+}
+
+impl ArrayToExAfArray for Array<f32> {
+    fn to_exaf_array(&self) -> ExAfArray {
+        ExAfArray::F32(self.copy())
+    }
+}
+
+impl ArrayToExAfArray for Array<f64> {
+    fn to_exaf_array(&self) -> ExAfArray {
+        ExAfArray::F64(self.copy())
+    }
+}
+
+impl ArrayToExAfArray for Array<Complex32> {
+    fn to_exaf_array(&self) -> ExAfArray {
+        ExAfArray::C64(self.copy())
+    }
+}
+
+impl ArrayToExAfArray for Array<Complex64> {
+    fn to_exaf_array(&self) -> ExAfArray {
+        ExAfArray::C128(self.copy())
+    }
+}
+
 #[macro_export]
 macro_rules! apply_method_array {
     ($self:ident, $method:ident, $($args:expr),*) => {

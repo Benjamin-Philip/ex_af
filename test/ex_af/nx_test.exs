@@ -54,6 +54,36 @@ defmodule ExAF.NxTest do
     end
   end
 
+  describe "iota" do
+    test "with a constant" do
+      t1 = Nx.iota({})
+      t2 = Nx.tensor(0)
+
+      assert_equal(t1, t2)
+    end
+
+    test "without an axis" do
+      t1 = Nx.iota({2, 2})
+      t2 = Nx.tensor([[0, 1], [2, 3]])
+
+      assert_equal(t1, t2)
+    end
+
+    test "with an axis one less than rank" do
+      t1 = Nx.iota({2, 2}, axis: 1)
+      t2 = Nx.tensor([[0, 1], [0, 1]])
+
+      assert_equal(t1, t2)
+    end
+
+    test "with an axis" do
+      t1 = Nx.iota({2, 2}, axis: 0)
+      t2 = Nx.tensor([[0, 0], [1, 1]])
+
+      assert_equal(t1, t2)
+    end
+  end
+
   # Type
 
   describe "as_type" do

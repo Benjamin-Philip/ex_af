@@ -4,13 +4,6 @@ defmodule ExAF.Backend do
   alias Nx.Tensor, as: T
   alias ExAF.Native
 
-  # Creation
-
-  def constant(%T{type: type, shape: shape} = out, constant, backend_opts) do
-    data = :binary.copy(ExAF.number_to_binary(constant, type), Nx.size(shape))
-    from_binary(out, data, backend_opts)
-  end
-
   # Conversion
 
   def from_binary(%T{shape: shape, type: type} = out, binary, _opts \\ []) do
@@ -60,7 +53,73 @@ defmodule ExAF.Backend do
     %{t | data: ref}
   end
 
+  # Creation
+
+  def constant(%T{type: type, shape: shape} = out, constant, backend_opts) do
+    data = :binary.copy(ExAF.number_to_binary(constant, type), Nx.size(shape))
+    from_binary(out, data, backend_opts)
+  end
+
+  def iota(%T{shape: {}} = out, nil, backend_opts) do
+    constant(out, 0, backend_opts)
+  end
+
+  def iota(out, nil, _backend_opts) do
+    shape = ExAF.to_exaf_shape(out.shape)
+    type = ExAF.to_exaf_type(out.type)
+    tdims = ExAF.to_exaf_shape({1, 1, 1, 1})
+
+    shape
+    |> Native.iota(tdims, type)
+    |> to_nx(out)
+  end
+
+  def iota(out, axis, _backend_opts) when axis == tuple_size(out.shape) - 1 do
+    {tdims, shape} =
+      out.shape
+      |> Tuple.to_list()
+      |> Enum.split(axis)
+
+    type = ExAF.to_exaf_type(out.type)
+    tdims = ExAF.to_exaf_shape(tdims)
+
+    shape
+    |> ExAF.to_exaf_shape()
+    |> Native.iota(tdims, type)
+    |> to_nx(out)
+  end
+
+  # TODO: Rewrite in an ArrayFire native manner
+  # Copied from Nx.BinaryBackend
+
+  def iota(%{shape: shape, type: type} = out, axis, _backend_options) do
+    {dims_before, [dim | dims_after]} =
+      shape
+      |> Tuple.to_list()
+      |> Enum.split(axis)
+
+    # Number of repetitions of an index in memory
+    repeat_blocks =
+      dims_after
+      |> Enum.reduce(1, &*/2)
+
+    # Number of cycles of the counting pattern
+    cycles =
+      dims_before
+      |> Enum.reduce(1, &*/2)
+
+    data =
+      for _ <- 1..cycles,
+          i <- 0..(dim - 1),
+          _ <- 1..repeat_blocks,
+          into: "",
+          do: ExAF.number_to_binary(i, type)
+
+    from_binary(out, data)
+  end
+
   # Shape
+
   def reshape(out, tensor) do
     shape = ExAF.to_exaf_shape(out.shape)
 

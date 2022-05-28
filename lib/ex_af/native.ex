@@ -8,6 +8,10 @@ defmodule ExAF.Native do
   def from_binary(_, _, _), do: error()
   def to_binary(_, _), do: error()
 
+  # Creation
+
+  def iota(_, _, _), do: error()
+
   # Shape
 
   def reshape(_, _), do: error()

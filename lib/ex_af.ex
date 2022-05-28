@@ -32,9 +32,13 @@ defmodule ExAF do
     "#{atom}#{bytes}"
   end
 
-  def to_exaf_shape(shape) do
-    shape = Tuple.to_list(shape)
+  def to_exaf_shape(shape) when is_tuple(shape) do
+    shape
+    |> Tuple.to_list()
+    |> to_exaf_shape
+  end
 
+  def to_exaf_shape(shape) when is_list(shape) do
     case length(shape) do
       len when len > 4 ->
         raise ArgumentError, "ExAF does not support #{len} dimensional tensors"
