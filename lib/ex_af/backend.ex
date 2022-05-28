@@ -6,6 +6,7 @@ defmodule ExAF.Backend do
 
   # Conversion
 
+  @impl true
   def from_binary(%T{shape: shape, type: type} = out, binary, _opts \\ []) do
     shape = ExAF.to_exaf_shape(shape)
     type = ExAF.to_exaf_type(type)
@@ -15,6 +16,7 @@ defmodule ExAF.Backend do
     |> to_nx(out)
   end
 
+  @impl true
   def to_binary(%T{data: data}, limit \\ nil, _backend_opts \\ []) do
     Native.to_binary(data, limit)
   end
@@ -55,15 +57,18 @@ defmodule ExAF.Backend do
 
   # Creation
 
+  @impl true
   def constant(%T{type: type, shape: shape} = out, constant, backend_opts) do
     data = :binary.copy(ExAF.number_to_binary(constant, type), Nx.size(shape))
     from_binary(out, data, backend_opts)
   end
 
+  @impl true
   def iota(%T{shape: {}} = out, nil, backend_opts) do
     constant(out, 0, backend_opts)
   end
 
+  @impl true
   def iota(out, nil, _backend_opts) do
     shape = ExAF.to_exaf_shape(out.shape)
     type = ExAF.to_exaf_type(out.type)
@@ -74,6 +79,7 @@ defmodule ExAF.Backend do
     |> to_nx(out)
   end
 
+  @impl true
   def iota(out, axis, _backend_opts) when axis == tuple_size(out.shape) - 1 do
     {tdims, shape} =
       out.shape
@@ -92,6 +98,7 @@ defmodule ExAF.Backend do
   # TODO: Rewrite in an ArrayFire native manner
   # Copied from Nx.BinaryBackend
 
+  @impl true
   def iota(%{shape: shape, type: type} = out, axis, _backend_options) do
     {dims_before, [dim | dims_after]} =
       shape
@@ -120,6 +127,7 @@ defmodule ExAF.Backend do
 
   # Shape
 
+  @impl true
   def reshape(out, tensor) do
     shape = ExAF.to_exaf_shape(out.shape)
 
@@ -131,6 +139,7 @@ defmodule ExAF.Backend do
 
   # Type
 
+  @impl true
   def as_type(out, tensor) do
     type = ExAF.to_exaf_type(out.type)
 
