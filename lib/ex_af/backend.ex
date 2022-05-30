@@ -125,6 +125,33 @@ defmodule ExAF.Backend do
     from_binary(out, data)
   end
 
+  # Elementwise
+
+  # unary_ops =
+  #   [:exp, :expm1, :log, :log1p, :logistic, :cos, :sin, :tan, :cosh, :sinh] ++
+  #     [:tanh, :acos, :asin, :atan, :acosh, :asinh, :atanh, :sqrt, :rsqrt] ++
+  #     [:erf, :erfc, :erf_inv, :abs, :bitwise_not, :ceil, :floor, :negate, :round, :sign] ++
+  #     [:logical_not, :cbrt]
+
+  unary_ops =
+    [:exp, :expm1, :log, :log1p, :sigmoid] ++
+      [:sin, :cos, :tan, :sinh, :cosh, :tanh, :asin, :acos, :atan, :asinh, :acosh, :atanh] ++
+      [:erf, :erfc] ++
+      [:sqrt, :rsqrt, :cbrt] ++ [:abs, :floor, :round, :ceil, :real, :imag]
+
+  for op <- unary_ops do
+    @impl true
+    def unquote(op)(out, tensor) do
+      type = ExAF.to_exaf_type(out.type)
+
+      tensor
+      |> from_nx()
+      |> Native.unquote(op)()
+      |> Native.as_type(type)
+      |> to_nx(out)
+    end
+  end
+
   # Shape
 
   @impl true

@@ -16,11 +16,41 @@ defmodule ExAF.NxTest do
     {:c, 128}
   ]
 
+  @unary_ops [
+    :exp,
+    :log,
+    :sin,
+    :tan,
+    :tanh,
+    :atan,
+    :asinh,
+    :acosh,
+    :erf,
+    :sqrt,
+    :abs,
+    :floor,
+    :real
+  ]
+
+  @rounding_unary_ops [
+    :expm1,
+    :log1p,
+    :sigmoid,
+    :cos,
+    :sinh,
+    :cosh,
+    :erfc,
+    :rsqrt,
+    :cbrt,
+    :round,
+    :ceil
+  ]
+
   # Creation
 
   describe "tensor" do
     for type <- @supported_types do
-      test "creation of #{inspect(type)}" do
+      test "creation of #{Nx.Type.to_string(type)}" do
         list = [1, 2, 3]
 
         exaf_binary =
@@ -36,7 +66,7 @@ defmodule ExAF.NxTest do
         assert exaf_binary == binary_backend_binary
       end
 
-      test "constant creation of #{inspect(type)}" do
+      test "constant creation of #{Nx.Type.to_string(type)}" do
         scalar = 1
 
         exaf_binary =
@@ -84,11 +114,43 @@ defmodule ExAF.NxTest do
     end
   end
 
+  # Elementwise
+
+  describe "manual rounding error tests" do
+    test "asinh/1" do
+      assert_all_close(Nx.tensor(3), Nx.asinh(Nx.tensor(10.017874)))
+    end
+
+    test "acosh/1" do
+      assert_all_close(Nx.tensor(3), Nx.acosh(Nx.tensor(10.06766)))
+    end
+
+    test "atanh/1" do
+      assert_all_close(Nx.tensor(3), Nx.atanh(Nx.tensor(0.9950547)))
+    end
+  end
+
+  describe "rounding error tests" do
+    for op <- @rounding_unary_ops, type <- @supported_types -- [{:c, 64}, {:c, 128}] do
+      test "#{op}(#{Nx.Type.to_string(type)})" do
+        test_round_unary_op(unquote(op), unquote(type))
+      end
+    end
+  end
+
+  describe "unary ops" do
+    for op <- @unary_ops, type <- @supported_types -- [{:c, 64}, {:c, 128}] do
+      test "#{op}(#{Nx.Type.to_string(type)})" do
+        test_unary_op(unquote(op), unquote(type))
+      end
+    end
+  end
+
   # Type
 
   describe "as_type" do
     for type1 <- @supported_types, type2 <- @supported_types do
-      test "#{inspect(type1)} from #{inspect(type2)}" do
+      test "#{Nx.Type.to_string(type1)} from #{Nx.Type.to_string(type2)}" do
         list = [1, 2, 3]
 
         t1 =
@@ -101,5 +163,32 @@ defmodule ExAF.NxTest do
         assert_equal(t1, t2)
       end
     end
+  end
+
+  # Helper functions
+
+  defp apply_unary_op(op, data, type) do
+    t = Nx.tensor(data, type: type)
+    r = Kernel.apply(Nx, op, [t])
+
+    binary_t =
+      t
+      |> Nx.to_binary()
+      |> Nx.from_binary(t.type, backend: Nx.BinaryBackend)
+
+    binary_r = Kernel.apply(Nx, op, [binary_t])
+    {r, binary_r}
+  end
+
+  defp test_round_unary_op(op, data \\ [[1, 2], [3, 4]], type) do
+    {r, binary_r} = apply_unary_op(op, data, type)
+
+    assert_all_close(r, binary_r)
+  end
+
+  defp test_unary_op(op, data \\ [[1, 2], [3, 4]], type) do
+    {r, binary_r} = apply_unary_op(op, data, type)
+
+    assert_equal(r, binary_r)
   end
 end

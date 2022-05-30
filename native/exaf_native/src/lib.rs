@@ -13,6 +13,49 @@ fn load(env: Env, _info: Term) -> bool {
 
 rustler::init!(
     "Elixir.ExAF.Native",
-    [from_binary, to_binary, reshape, as_type, iota],
+    [
+        // Conversion
+        from_binary,
+        to_binary,
+        // Creation
+        iota,
+        // Elementwise - Exponentation
+        exp,
+        expm1,
+        log,
+        log1p,
+        sigmoid,
+        // Elementwise - Trignomentry
+        sin,
+        cos,
+        tan,
+        sinh,
+        cosh,
+        tanh,
+        asin,
+        acos,
+        atan,
+        asinh,
+        acosh,
+        atanh,
+        // Elementwise - Error Functions
+        erf,
+        erfc,
+        // Elementwise - Roots
+        sqrt,
+        rsqrt,
+        cbrt,
+        // Elementwise - Number Theoryesque Functions
+        abs,
+        floor,
+        round,
+        ceil,
+        real,
+        imag,
+        // Shape
+        reshape,
+        // Type
+        as_type
+    ],
     load = load
 );

@@ -24,7 +24,7 @@ defmodule ExAF do
     if Enum.member?(@supported_types, type) do
       type_to_string(type)
     else
-      raise ArgumentError, "ExAF does not support type: #{inspect(type)}"
+      raise ArgumentError, "ExAF does not support type: #{Nx.Type.to_string(type)}"
     end
   end
 

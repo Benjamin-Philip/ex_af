@@ -12,6 +12,18 @@ defmodule ExAF.Native do
 
   def iota(_, _, _), do: error()
 
+  # Elementwise
+
+  unary_ops =
+    [:exp, :expm1, :log, :log1p, :sigmoid] ++
+      [:sin, :cos, :tan, :sinh, :cosh, :tanh, :asin, :acos, :atan, :asinh, :acosh, :atanh] ++
+      [:erf, :erfc] ++
+      [:sqrt, :rsqrt, :cbrt] ++ [:abs, :floor, :round, :ceil, :real, :imag]
+
+  for op <- unary_ops do
+    def unquote(op)(_), do: error()
+  end
+
   # Shape
 
   def reshape(_, _), do: error()

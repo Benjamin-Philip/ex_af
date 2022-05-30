@@ -25,4 +25,9 @@ defmodule ExAF.Case do
       """)
     end
   end
+
+  # TODO: Actually test with Nx.all_close
+
+  def assert_all_close(_left, _right, _opts \\ []) do
+  end
 end

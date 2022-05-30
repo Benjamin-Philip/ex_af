@@ -61,6 +61,62 @@ pub fn to_binary(env: Env, array: ExAf, limit: usize) -> Binary {
     erl_bin.release(env)
 }
 
+// Elementwise
+
+macro_rules! unary_op {
+    ($op_name:ident, $af_op:ident) => {
+        #[rustler::nif]
+        pub fn $op_name(array: ExAf) -> ExAf {
+            let ex_array = array.resource.value();
+            apply_function_array!(ex_array, $af_op,)
+        }
+    };
+}
+
+// Elementwise - Exponentation
+
+unary_op!(exp, exp);
+unary_op!(expm1, expm1);
+unary_op!(log, log);
+unary_op!(log1p, log1p);
+unary_op!(sigmoid, sigmoid);
+
+// Elementwise - Trignometry
+
+unary_op!(sin, sin);
+unary_op!(cos, cos);
+unary_op!(tan, tan);
+unary_op!(sinh, sinh);
+unary_op!(cosh, cosh);
+unary_op!(tanh, tanh);
+unary_op!(asin, asin);
+unary_op!(acos, acos);
+unary_op!(atan, atan);
+unary_op!(asinh, asinh);
+unary_op!(acosh, acosh);
+unary_op!(atanh, atanh);
+
+// Elementwise - Error Functions
+
+unary_op!(erf, erf);
+unary_op!(erfc, erfc);
+
+// Elementwise - Error Functions
+
+unary_op!(sqrt, sqrt);
+unary_op!(rsqrt, rsqrt);
+unary_op!(cbrt, cbrt);
+
+// Elementwise - Number Theoryesque Functions
+
+unary_op!(abs, abs);
+unary_op!(floor, floor);
+unary_op!(round, round);
+unary_op!(sign, sign);
+unary_op!(ceil, ceil);
+unary_op!(real, real);
+unary_op!(imag, imag);
+
 // Shape
 
 #[rustler::nif]
