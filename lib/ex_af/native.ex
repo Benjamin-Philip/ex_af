@@ -3,6 +3,10 @@ defmodule ExAF.Native do
     otp_app: :ex_af,
     crate: "exaf_native"
 
+  # Backend management
+
+  def backend_deallocate(_), do: error()
+
   # Conversion
 
   def from_binary(_, _, _), do: error()

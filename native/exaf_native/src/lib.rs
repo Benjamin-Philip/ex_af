@@ -14,6 +14,8 @@ fn load(env: Env, _info: Term) -> bool {
 rustler::init!(
     "Elixir.ExAF.Native",
     [
+        // Backend management
+        backend_deallocate,
         // Conversion
         from_binary,
         to_binary,

@@ -4,6 +4,36 @@ defmodule ExAF.Backend do
   alias Nx.Tensor, as: T
   alias ExAF.Native
 
+  # Backend management
+
+  def backend_copy(tensor, backend, opts \\ [])
+
+  @impl true
+  def backend_copy(tensor, Nx.Tensor, opts) do
+    backend_copy(tensor, Nx.BinaryBackend, opts)
+  end
+
+  @impl true
+  def backend_copy(tensor, backend, opts) do
+    tensor
+    |> Nx.to_binary()
+    |> then(&backend.from_binary(tensor, &1, opts))
+  end
+
+  @impl true
+  def backend_deallocate(tensor) do
+    tensor
+    |> from_nx
+    |> Native.backend_deallocate()
+  end
+
+  @impl true
+  def backend_transfer(tensor, module, opts) do
+    backend_copy(tensor, module, opts)
+  after
+    backend_deallocate(tensor)
+  end
+
   # Conversion
 
   @impl true
@@ -17,8 +47,10 @@ defmodule ExAF.Backend do
   end
 
   @impl true
-  def to_binary(%T{data: data}, limit \\ nil, _backend_opts \\ []) do
-    Native.to_binary(data, limit)
+  def to_binary(tensor, limit) do
+    tensor
+    |> from_nx
+    |> Native.to_binary(limit)
   end
 
   @impl true

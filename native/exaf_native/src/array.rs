@@ -4,10 +4,50 @@ use arrayfire::Dim4;
 use half::f16;
 use num_complex::{Complex32, Complex64};
 use rustler::types::{Binary, OwnedBinary};
-use rustler::Env;
+use rustler::{Atom, Env};
 use std::convert::TryInto;
 
+mod atoms {
+    rustler::atoms! {
+        ok
+    }
+}
+
 // Public API
+
+// Backend management
+
+#[rustler::nif]
+pub fn backend_deallocate(array: ExAf) -> Atom {
+    let exaf_array = array.resource.value();
+
+    match exaf_array {
+        ExAfArray::U8(a) => drop(a),
+        ExAfArray::U16(a) => drop(a),
+        ExAfArray::U32(a) => drop(a),
+        ExAfArray::U64(a) => drop(a),
+        ExAfArray::S16(a) => drop(a),
+        ExAfArray::S32(a) => drop(a),
+        ExAfArray::S64(a) => drop(a),
+        ExAfArray::F16(a) => drop(a),
+        ExAfArray::F32(a) => drop(a),
+        ExAfArray::F64(a) => drop(a),
+        ExAfArray::C64(a) => drop(a),
+        ExAfArray::C128(a) => drop(a),
+    }
+
+    // ArrayFire has its own memory manager.
+    // So when we drop, the allocatted memory is marked as
+    // resusable rather than deleted.
+    //
+    // This means that we can only return :ok because we don't
+    // really know if an array has been marked reusable or not.
+    //
+    // TODO: Document this behaviour (and the possible side effects
+    // of it) in the docs.
+
+    atoms::ok()
+}
 
 // Creation
 

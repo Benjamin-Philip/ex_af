@@ -46,6 +46,49 @@ defmodule ExAF.NxTest do
     :ceil
   ]
 
+  # Backend management
+
+  test "backend_copy/3" do
+    backend =
+      [1, 2, 3]
+      |> Nx.tensor()
+      |> Nx.backend_copy(Nx.BinaryBackend)
+      |> Map.get(:data)
+      |> Map.get(:__struct__)
+
+    assert backend == Nx.BinaryBackend
+  end
+
+  describe "backend_deallocate/1" do
+    test "handles regular deallocation" do
+      response =
+        [1, 2, 3]
+        |> Nx.tensor()
+        |> Nx.backend_deallocate()
+
+      assert response == :ok
+    end
+
+    test "handles edge-case deallocation" do
+      t = Nx.tensor([1, 2, 3])
+
+      Nx.backend_deallocate(t)
+
+      assert Nx.backend_deallocate(t) == :ok
+    end
+  end
+
+  test "backend_transfer/2" do
+    backend =
+      [1, 2, 3]
+      |> Nx.tensor()
+      |> Nx.backend_transfer(Nx.BinaryBackend)
+      |> Map.get(:data)
+      |> Map.get(:__struct__)
+
+    assert backend == Nx.BinaryBackend
+  end
+
   # Creation
 
   describe "tensor" do
@@ -171,10 +214,7 @@ defmodule ExAF.NxTest do
     t = Nx.tensor(data, type: type)
     r = Kernel.apply(Nx, op, [t])
 
-    binary_t =
-      t
-      |> Nx.to_binary()
-      |> Nx.from_binary(t.type, backend: Nx.BinaryBackend)
+    binary_t = Nx.backend_transfer(t)
 
     binary_r = Kernel.apply(Nx, op, [binary_t])
     {r, binary_r}
