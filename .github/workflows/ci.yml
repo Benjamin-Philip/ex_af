@@ -81,3 +81,29 @@ jobs:
           otp-version: "${{ env.OTP_VERSION }}"
           elixir-version: "${{ env.ELIXIR_VERSION }}"
       - run: mix format --check-formatted
+  lint-rust:
+    name: Lint Rust
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        manifest:
+          - native/exaf_native/Cargo.toml
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          components: rustfmt, clippy
+          override: true
+      - name: run rustfmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --manifest-path=${{ matrix.manifest }} --all -- --check
+      - name: run clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --manifest-path=${{ matrix.manifest }} -- -Dwarnings
