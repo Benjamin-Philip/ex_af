@@ -21,12 +21,34 @@ rustler::init!(
         to_binary,
         // Creation
         iota,
+        // Elementwise - Arithmetic
+        add,
+        subtract,
+        multiply,
+        power,
+        remainder,
+        divide,
+        min,
+        max,
+        // Elementwise - Comparison
+        equal,
+        not_equal,
+        greater,
+        less,
+        greater_equal,
+        less_equal,
         // Elementwise - Exponentation
         exp,
         expm1,
         log,
         log1p,
         sigmoid,
+        // Elementwise - logical
+        logical_and,
+        logical_or,
+        // Elementwise - Shifts
+        left_shift,
+        right_shift,
         // Elementwise - Trignomentry
         sin,
         cos,
@@ -40,6 +62,7 @@ rustler::init!(
         asinh,
         acosh,
         atanh,
+        atan2,
         // Elementwise - Error Functions
         erf,
         erfc,

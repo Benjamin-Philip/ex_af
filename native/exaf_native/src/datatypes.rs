@@ -213,6 +213,12 @@ pub trait ArrayToExAfArray {
     fn to_exaf_array(&self) -> ExAfArray;
 }
 
+impl ArrayToExAfArray for Array<bool> {
+    fn to_exaf_array(&self) -> ExAfArray {
+        ExAfArray::U8(self.cast::<u8>().copy())
+    }
+}
+
 impl ArrayToExAfArray for Array<u8> {
     fn to_exaf_array(&self) -> ExAfArray {
         ExAfArray::U8(self.copy())

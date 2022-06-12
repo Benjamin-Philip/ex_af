@@ -1,6 +1,8 @@
 defmodule ExAF.NxTest do
   use ExAF.Case, async: true
 
+  alias ExAF.Helpers
+
   @supported_types [
     {:u, 8},
     {:u, 16},
@@ -15,6 +17,12 @@ defmodule ExAF.NxTest do
     {:c, 64},
     {:c, 128}
   ]
+
+  @real_types @supported_types -- [{:c, 64}, {:c, 128}]
+
+  @floats [{:f, 16}, {:f, 32}, {:f, 64}]
+
+  @integers @real_types -- @floats
 
   @unary_ops [
     :exp,
@@ -31,6 +39,8 @@ defmodule ExAF.NxTest do
     :floor,
     :real
   ]
+
+  @binary_ops Helpers.binary_ops() -- [:left_shift, :right_shift]
 
   @rounding_unary_ops [
     :expm1,
@@ -174,17 +184,42 @@ defmodule ExAF.NxTest do
   end
 
   describe "rounding error tests" do
-    for op <- @rounding_unary_ops, type <- @supported_types -- [{:c, 64}, {:c, 128}] do
+    for op <- @rounding_unary_ops, type <- @real_types do
       test "#{op}(#{Nx.Type.to_string(type)})" do
         test_round_unary_op(unquote(op), unquote(type))
+      end
+    end
+
+    for type_left <- @real_types,
+        type_right <- @real_types do
+      test "divide(#{Nx.Type.to_string(type_left)}, #{Nx.Type.to_string(type_right)})" do
+        test_round_binary_op(:divide, unquote(type_left), unquote(type_right))
       end
     end
   end
 
   describe "unary ops" do
-    for op <- @unary_ops, type <- @supported_types -- [{:c, 64}, {:c, 128}] do
+    for op <- @unary_ops, type <- @real_types do
       test "#{op}(#{Nx.Type.to_string(type)})" do
         test_unary_op(unquote(op), unquote(type))
+      end
+    end
+  end
+
+  describe "binary ops" do
+    for op <- @binary_ops -- [:divide],
+        type_left <- @real_types,
+        type_right <- @real_types do
+      test "#{op}(#{Nx.Type.to_string(type_left)}, #{Nx.Type.to_string(type_right)})" do
+        test_binary_op(unquote(op), unquote(type_left), unquote(type_right))
+      end
+    end
+
+    for op <- [:right_shift, :left_shift],
+        type_left <- @integers,
+        type_right <- @integers do
+      test "#{op}(#{Nx.Type.to_string(type_left)}, #{Nx.Type.to_string(type_right)})" do
+        test_binary_op(unquote(op), unquote(type_left), unquote(type_right))
       end
     end
   end
@@ -230,5 +265,42 @@ defmodule ExAF.NxTest do
     {r, binary_r} = apply_unary_op(op, data, type)
 
     assert_equal(r, binary_r)
+  end
+
+  defp apply_binary_op(op, data_left, data_right, type_left, type_right) do
+    left = Nx.tensor(data_left, type: type_left)
+    right = Nx.tensor(data_right, type: type_right)
+
+    r = Kernel.apply(Nx, op, [left, right])
+
+    bleft = Nx.backend_transfer(left)
+    bright = Nx.backend_transfer(right)
+    binary_r = Kernel.apply(Nx, op, [bleft, bright])
+
+    {r, binary_r}
+  end
+
+  defp test_binary_op(
+         op,
+         data_left \\ [[5, 6], [7, 8]],
+         data_right \\ [[1, 2], [3, 4]],
+         type_left,
+         type_right
+       ) do
+    {r, binary_r} = apply_binary_op(op, data_left, data_right, type_left, type_right)
+
+    assert_equal(r, binary_r)
+  end
+
+  defp test_round_binary_op(
+         op,
+         data_left \\ [[5, 6], [7, 8]],
+         data_right \\ [[1, 2], [3, 4]],
+         type_left,
+         type_right
+       ) do
+    {r, binary_r} = apply_binary_op(op, data_left, data_right, type_left, type_right)
+
+    assert_all_close(r, binary_r)
   end
 end

@@ -2,7 +2,11 @@ defmodule ExAF.Backend do
   @behaviour Nx.Backend
 
   alias Nx.Tensor, as: T
+  alias Nx.Type
+
   alias ExAF.Native
+
+  import ExAF.Helpers
 
   # Backend management
 
@@ -38,8 +42,8 @@ defmodule ExAF.Backend do
 
   @impl true
   def from_binary(%T{shape: shape, type: type} = out, binary, _opts \\ []) do
-    shape = ExAF.to_exaf_shape(shape)
-    type = ExAF.to_exaf_type(type)
+    shape = to_exaf_shape(shape)
+    type = to_exaf_type(type)
 
     binary
     |> Native.from_binary(shape, type)
@@ -79,19 +83,11 @@ defmodule ExAF.Backend do
     end
   end
 
-  defp from_nx(%T{data: ref}) do
-    ref
-  end
-
-  defp to_nx(ref, %T{type: _type, shape: _shape} = t) do
-    %{t | data: ref}
-  end
-
   # Creation
 
   @impl true
   def constant(%T{type: type, shape: shape} = out, constant, backend_opts) do
-    data = :binary.copy(ExAF.number_to_binary(constant, type), Nx.size(shape))
+    data = :binary.copy(number_to_binary(constant, type), Nx.size(shape))
     from_binary(out, data, backend_opts)
   end
 
@@ -102,9 +98,9 @@ defmodule ExAF.Backend do
 
   @impl true
   def iota(out, nil, _backend_opts) do
-    shape = ExAF.to_exaf_shape(out.shape)
-    type = ExAF.to_exaf_type(out.type)
-    tdims = ExAF.to_exaf_shape({1, 1, 1, 1})
+    shape = to_exaf_shape(out.shape)
+    type = to_exaf_type(out.type)
+    tdims = to_exaf_shape({1, 1, 1, 1})
 
     shape
     |> Native.iota(tdims, type)
@@ -118,11 +114,11 @@ defmodule ExAF.Backend do
       |> Tuple.to_list()
       |> Enum.split(axis)
 
-    type = ExAF.to_exaf_type(out.type)
-    tdims = ExAF.to_exaf_shape(tdims)
+    type = to_exaf_type(out.type)
+    tdims = to_exaf_shape(tdims)
 
     shape
-    |> ExAF.to_exaf_shape()
+    |> to_exaf_shape()
     |> Native.iota(tdims, type)
     |> to_nx(out)
   end
@@ -152,29 +148,17 @@ defmodule ExAF.Backend do
           i <- 0..(dim - 1),
           _ <- 1..repeat_blocks,
           into: "",
-          do: ExAF.number_to_binary(i, type)
+          do: number_to_binary(i, type)
 
     from_binary(out, data)
   end
 
   # Elementwise
 
-  # unary_ops =
-  #   [:exp, :expm1, :log, :log1p, :logistic, :cos, :sin, :tan, :cosh, :sinh] ++
-  #     [:tanh, :acos, :asin, :atan, :acosh, :asinh, :atanh, :sqrt, :rsqrt] ++
-  #     [:erf, :erfc, :erf_inv, :abs, :bitwise_not, :ceil, :floor, :negate, :round, :sign] ++
-  #     [:logical_not, :cbrt]
-
-  unary_ops =
-    [:exp, :expm1, :log, :log1p, :sigmoid] ++
-      [:sin, :cos, :tan, :sinh, :cosh, :tanh, :asin, :acos, :atan, :asinh, :acosh, :atanh] ++
-      [:erf, :erfc] ++
-      [:sqrt, :rsqrt, :cbrt] ++ [:abs, :floor, :round, :ceil, :real, :imag]
-
-  for op <- unary_ops do
+  for op <- unary_ops() do
     @impl true
     def unquote(op)(out, tensor) do
-      type = ExAF.to_exaf_type(out.type)
+      type = to_exaf_type(out.type)
 
       tensor
       |> from_nx()
@@ -184,11 +168,46 @@ defmodule ExAF.Backend do
     end
   end
 
+  for op <- binary_ops() -- [:atan2] do
+    @impl true
+    def unquote(op)(out, l, r) do
+      type = to_exaf_type(out.type)
+
+      l
+      |> from_nx()
+      |> Native.unquote(op)(from_nx(r))
+      |> Native.as_type(type)
+      |> to_nx(out)
+    end
+  end
+
+  # ArrayFire's atan2 implementation only supports floating point
+  # arrays. So, we need to type cast both the tensors into floats.
+  @impl true
+  def atan2(out, l, r) do
+    type = to_exaf_type(out.type)
+
+    left = to_floating(l)
+    right = to_floating(r)
+
+    left
+    |> Native.atan2(right)
+    |> Native.as_type(type)
+    |> to_nx(out)
+  end
+
+  defp to_floating(tensor) do
+    tensor.type
+    |> Type.merge({:f, 64})
+    |> to_exaf_type
+    |> then(&Native.as_type(from_nx(tensor), &1))
+  end
+
   # Shape
 
   @impl true
   def reshape(out, tensor) do
-    shape = ExAF.to_exaf_shape(out.shape)
+    shape = to_exaf_shape(out.shape)
 
     tensor
     |> from_nx()
@@ -200,7 +219,7 @@ defmodule ExAF.Backend do
 
   @impl true
   def as_type(out, tensor) do
-    type = ExAF.to_exaf_type(out.type)
+    type = to_exaf_type(out.type)
 
     tensor
     |> from_nx()

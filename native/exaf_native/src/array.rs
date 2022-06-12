@@ -113,6 +113,51 @@ macro_rules! unary_op {
     };
 }
 
+macro_rules! binary_op {
+    ($op_name:ident, $af_op:ident) => {
+        #[rustler::nif]
+        pub fn $op_name(left: ExAf, right: ExAf) -> ExAf {
+            let left_array = left.resource.value();
+            let right_array = right.resource.value();
+
+            match right_array {
+                ExAfArray::U8(ref b) => apply_function_array!(left_array, $af_op, b, true),
+                ExAfArray::U16(ref b) => apply_function_array!(left_array, $af_op, b, true),
+                ExAfArray::U32(ref b) => apply_function_array!(left_array, $af_op, b, true),
+                ExAfArray::U64(ref b) => apply_function_array!(left_array, $af_op, b, true),
+                ExAfArray::S16(ref b) => apply_function_array!(left_array, $af_op, b, true),
+                ExAfArray::S32(ref b) => apply_function_array!(left_array, $af_op, b, true),
+                ExAfArray::S64(ref b) => apply_function_array!(left_array, $af_op, b, true),
+                ExAfArray::F16(ref b) => apply_function_array!(left_array, $af_op, b, true),
+                ExAfArray::F32(ref b) => apply_function_array!(left_array, $af_op, b, true),
+                ExAfArray::F64(ref b) => apply_function_array!(left_array, $af_op, b, true),
+                ExAfArray::C64(ref b) => apply_function_array!(left_array, $af_op, b, true),
+                ExAfArray::C128(ref b) => apply_function_array!(left_array, $af_op, b, true),
+            }
+        }
+    };
+}
+
+// Elementwise - Arithmetic
+
+binary_op!(add, add);
+binary_op!(subtract, sub);
+binary_op!(multiply, mul);
+binary_op!(power, pow);
+binary_op!(remainder, rem);
+binary_op!(divide, div);
+binary_op!(min, minof);
+binary_op!(max, maxof);
+
+// Elementwise - Comparison
+
+binary_op!(equal, eq);
+binary_op!(not_equal, neq);
+binary_op!(greater, gt);
+binary_op!(less, lt);
+binary_op!(greater_equal, ge);
+binary_op!(less_equal, le);
+
 // Elementwise - Exponentation
 
 unary_op!(exp, exp);
@@ -120,6 +165,15 @@ unary_op!(expm1, expm1);
 unary_op!(log, log);
 unary_op!(log1p, log1p);
 unary_op!(sigmoid, sigmoid);
+
+// Elementwise - logical
+
+binary_op!(logical_and, and);
+binary_op!(logical_or, or);
+
+// Elementwise - Shifts
+binary_op!(left_shift, shiftl);
+binary_op!(right_shift, shiftr);
 
 // Elementwise - Trignometry
 
@@ -135,6 +189,7 @@ unary_op!(atan, atan);
 unary_op!(asinh, asinh);
 unary_op!(acosh, acosh);
 unary_op!(atanh, atanh);
+binary_op!(atan2, atan2);
 
 // Elementwise - Error Functions
 

@@ -20,7 +20,30 @@ defmodule ExAF.NxDoctestTest do
     |> Keyword.keys()
     |> then(&Keyword.drop(@nx_funcs, &1))
 
-  temporarily_broken_doctests = []
+  temporarily_broken_doctests = [
+    # ExAF has not implemented broadcast/4
+    add: 2,
+    # ExAF has not implemented broadcast/4
+    remainder: 2,
+    # ExAF has not implemented broadcast/4
+    power: 2,
+    # ExAF has not implemented broadcast/4
+    atan2: 2,
+    # ExAF has not implemented broadcast/4
+    equal: 2,
+    # ExAF has not implemented broadcast/4
+    greater: 2,
+    # ExAF has not implemented broadcast/4
+    less: 2,
+    # ExAF has not implemented broadcast/4
+    greater_equal: 2,
+    # ExAF has not implemented broadcast/4
+    less_equal: 2,
+    # ExAF has not implemented broadcast/4
+    logical_and: 2,
+    # ExAF has not implemented broadcast/4
+    logical_or: 2
+  ]
 
   inherently_unsupported_doctests = [
     # ExAF/Arrayfire does not support s8
@@ -30,7 +53,19 @@ defmodule ExAF.NxDoctestTest do
     # ExAF/Arrayfire does not support bf16
     real: 1,
     # ExAF/Arrayfire does not support bf16
-    imag: 1
+    imag: 1,
+    # ExAF/Arrayfire does not support s8
+    subtract: 2,
+    # ExAF/Arrayfire does not support s8
+    multiply: 2,
+    # ExAF/Arrayfire does not support s8
+    divide: 2,
+    # ExAF/Arrayfire does not support s8
+    min: 2,
+    # ExAF/Arrayfire does not support s8
+    min: 2,
+    # ExAF/Arrayfire does not support s8
+    max: 2
   ]
 
   rounding_error_doctests = [
