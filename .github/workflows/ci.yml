@@ -113,6 +113,23 @@ jobs:
         with:
           command: fmt
           args: --manifest-path=${{ matrix.manifest }} --all -- --check
+      - name: Cache ArrayFire
+        uses: actions/cache@v1
+        id: arrayfire
+        with:
+          path: afbin
+          key: ${{ runner.os }}-af-${{ env.AF_VERSION }}
+      - name: Download ArrayFire
+        # Only download ArrayFire if already not found
+        if: steps.arrayfire.outputs.cache-hit != 'true'
+        run: |
+          wget --quiet http://arrayfire.s3.amazonaws.com/${AF_VERSION}/ArrayFire-v${AF_VERSION}_Linux_x86_64.sh
+          chmod +x ./ArrayFire-v${AF_VERSION}_Linux_x86_64.sh
+          mkdir afbin
+          ./ArrayFire-v${AF_VERSION}_Linux_x86_64.sh --skip-license --exclude-subdir --prefix=./afbin
+          rm ./afbin/lib64/libcu*.so*
+          rm ./afbin/lib64/libafcuda*.so*
+          rm ./ArrayFire-v${AF_VERSION}_Linux_x86_64.sh
       - name: Add ArrayFire to path
         run: |
           echo "AF_PATH=${GITHUB_WORKSPACE}/afbin" >> $GITHUB_ENV
