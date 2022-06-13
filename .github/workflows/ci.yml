@@ -1,4 +1,4 @@
-name: Elixir
+name: CI
 on:
   push:
     branches:
