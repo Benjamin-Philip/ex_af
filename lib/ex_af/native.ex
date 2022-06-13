@@ -16,6 +16,7 @@ defmodule ExAF.Native do
 
   # Creation
 
+  def eye(_, _), do: error()
   def iota(_, _, _), do: error()
 
   # Elementwise

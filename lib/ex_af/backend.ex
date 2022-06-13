@@ -92,6 +92,16 @@ defmodule ExAF.Backend do
   end
 
   @impl true
+  def eye(out, _backend_opts) do
+    shape = to_exaf_shape(out.shape)
+    type = to_exaf_type(out.type)
+
+    shape
+    |> Native.eye(type)
+    |> to_nx(out)
+  end
+
+  @impl true
   def iota(%T{shape: {}} = out, nil, backend_opts) do
     constant(out, 0, backend_opts)
   end

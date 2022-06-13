@@ -167,6 +167,13 @@ defmodule ExAF.NxTest do
     end
   end
 
+  test "eye" do
+    t1 = Nx.eye({2, 2})
+    t2 = Nx.tensor([[1, 0], [0, 1]])
+
+    assert_equal(t1, t2)
+  end
+
   # Elementwise
 
   describe "manual rounding error tests" do

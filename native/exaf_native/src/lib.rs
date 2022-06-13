@@ -20,6 +20,7 @@ rustler::init!(
         from_binary,
         to_binary,
         // Creation
+        eye,
         iota,
         // Elementwise - Arithmetic
         add,

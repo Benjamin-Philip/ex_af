@@ -52,27 +52,20 @@ pub fn backend_deallocate(array: ExAf) -> Atom {
 // Creation
 
 #[rustler::nif]
+pub fn eye(shape: Vec<u64>, dtype: String) -> ExAf {
+    let shape = dim_from_shape(shape);
+    let dtype = dtype_from_string(dtype);
+
+    apply_generic_function_array!(identity, dtype, shape)
+}
+
+#[rustler::nif]
 pub fn iota(shape: Vec<u64>, tdims: Vec<u64>, dtype: String) -> ExAf {
     let shape = dim_from_shape(shape);
     let dtype = dtype_from_string(dtype);
     let tdims = dim_from_shape(tdims);
 
-    let exaf_array = match dtype {
-        ExAfDType::U8 => arrayfire::iota::<u8>(shape, tdims).to_exaf_array(),
-        ExAfDType::U16 => arrayfire::iota::<u16>(shape, tdims).to_exaf_array(),
-        ExAfDType::U32 => arrayfire::iota::<u32>(shape, tdims).to_exaf_array(),
-        ExAfDType::U64 => arrayfire::iota::<u64>(shape, tdims).to_exaf_array(),
-        ExAfDType::S16 => arrayfire::iota::<i16>(shape, tdims).to_exaf_array(),
-        ExAfDType::S32 => arrayfire::iota::<i32>(shape, tdims).to_exaf_array(),
-        ExAfDType::S64 => arrayfire::iota::<i64>(shape, tdims).to_exaf_array(),
-        ExAfDType::F16 => arrayfire::iota::<f16>(shape, tdims).to_exaf_array(),
-        ExAfDType::F32 => arrayfire::iota::<f32>(shape, tdims).to_exaf_array(),
-        ExAfDType::F64 => arrayfire::iota::<f64>(shape, tdims).to_exaf_array(),
-        ExAfDType::C64 => arrayfire::iota::<Complex32>(shape, tdims).to_exaf_array(),
-        ExAfDType::C128 => arrayfire::iota::<Complex64>(shape, tdims).to_exaf_array(),
-    };
-
-    ExAf::from_exaf_array(exaf_array)
+    apply_generic_function_array!(iota, dtype, shape, tdims)
 }
 
 // Conversion

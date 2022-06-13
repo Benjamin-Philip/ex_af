@@ -357,6 +357,28 @@ macro_rules! apply_function_array {
 
 pub(crate) use apply_function_array;
 
+#[macro_export]
+macro_rules! apply_generic_function_array {
+    ($function:ident, $dtype:ident, $($args:expr),*) => {
+        ExAf::from_exaf_array(match $dtype {
+            ExAfDType::U8 => arrayfire::$function::<u8>($($args), *).to_exaf_array(),
+            ExAfDType::U16 => arrayfire::$function::<u16>($($args), *).to_exaf_array(),
+            ExAfDType::U32 => arrayfire::$function::<u32>($($args), *).to_exaf_array(),
+            ExAfDType::U64 => arrayfire::$function::<u64>($($args), *).to_exaf_array(),
+            ExAfDType::S16 => arrayfire::$function::<i16>($($args), *).to_exaf_array(),
+            ExAfDType::S32 => arrayfire::$function::<i32>($($args), *).to_exaf_array(),
+            ExAfDType::S64 => arrayfire::$function::<i64>($($args), *).to_exaf_array(),
+            ExAfDType::F16 => arrayfire::$function::<f16>($($args), *).to_exaf_array(),
+            ExAfDType::F32 => arrayfire::$function::<f32>($($args), *).to_exaf_array(),
+            ExAfDType::F64 => arrayfire::$function::<f64>($($args), *).to_exaf_array(),
+            ExAfDType::C64 => arrayfire::$function::<Complex32>($($args), *).to_exaf_array(),
+            ExAfDType::C128 => arrayfire::$function::<Complex64>($($args), *).to_exaf_array(),
+        })
+    };
+}
+
+pub(crate) use apply_generic_function_array;
+
 pub struct ExAfRef(pub RwLock<ExAfArray>);
 
 #[derive(NifStruct)]
